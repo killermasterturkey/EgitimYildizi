@@ -1,0 +1,490 @@
+// EğitimYıldızı - Prisma Schema
+// Özel eğitim platformu için veritabanı şeması
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  STUDENT
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+enum SpecialNeedType {
+  AUTISM
+  LEARNING_DISABILITY
+  INTELLECTUAL_DISABILITY
+  ADHD
+  DYSLEXIA
+  DYSCALCULIA
+  OTHER
+}
+
+enum GradeLevel {
+  PRESCHOOL
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+  GRADE_5
+  GRADE_6
+  GRADE_7
+  GRADE_8
+}
+
+enum Subject {
+  MATH
+  TURKISH
+  SCIENCE
+  SOCIAL_STUDIES
+  ENGLISH
+  LIFE_SKILLS
+}
+
+enum GameType {
+  MEMORY
+  DRAG_DROP
+  ARCADE
+  MATCHING
+  SORTING
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  MATCHING
+  DRAG_DROP
+  TRUE_FALSE
+}
+
+enum NotificationType {
+  ACHIEVEMENT
+  REMINDER
+  PROGRESS
+  MESSAGE
+  SYSTEM
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?
+  firstName     String
+  lastName      String
+  role          UserRole
+  avatar        String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+
+  // OAuth
+  googleId      String?   @unique
+  facebookId    String?   @unique
+
+  // Settings
+  settings      Json      @default("{}")
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  student       Student?
+  parent        Parent?
+  teacher       Teacher?
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Student {
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Profile
+  birthDate       DateTime?
+  grade           GradeLevel
+  specialNeeds    SpecialNeedType[]
+
+  // Gamification
+  xp              Int              @default(0)
+  level           Int              @default(1)
+  coins           Int              @default(0)
+
+  // Parent relation
+  parentId        String?
+  parent          Parent?          @relation(fields: [parentId], references: [id])
+
+  // Teacher relation
+  teacherId       String?
+  teacher         Teacher?         @relation(fields: [teacherId], references: [id])
+
+  // Progress & Achievements
+  progress        Progress[]
+  achievements    StudentAchievement[]
+  quizAttempts    QuizAttempt[]
+  gameScores      GameScore[]
+
+  // BEP
+  bep             BEP?
+
+  // Timestamps
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("students")
+}
+
+model Parent {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Children
+  children    Student[]
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("parents")
+}
+
+model Teacher {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // School info
+  school      String?
+
+  // Students
+  students    Student[]
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("teachers")
+}
+
+// ==================== CONTENT ====================
+
+model Lesson {
+  id          String      @id @default(uuid())
+  subject     Subject
+  grade       GradeLevel
+  title       String
+  description String?
+  order       Int
+  isActive    Boolean     @default(true)
+
+  // Content
+  topics      Topic[]
+
+  // Timestamps
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([subject, grade, order])
+  @@map("lessons")
+}
+
+model Topic {
+  id          String          @id @default(uuid())
+  lessonId    String
+  lesson      Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  title       String
+  content     String          @db.Text
+  order       Int
+  isActive    Boolean         @default(true)
+
+  // Media
+  images      String[]
+  animations  Json?
+  audioUrl    String?
+
+  // Related content
+  games       Game[]
+  quizzes     Quiz[]
+  progress    Progress[]
+
+  // Timestamps
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("topics")
+}
+
+// ==================== GAMES ====================
+
+model Game {
+  id          String          @id @default(uuid())
+  topicId     String?
+  topic       Topic?          @relation(fields: [topicId], references: [id])
+
+  title       String
+  description String?
+  type        GameType
+  difficulty  DifficultyLevel @default(EASY)
+
+  // Game configuration
+  config      Json
+
+  // Points
+  maxScore    Int             @default(100)
+  xpReward    Int             @default(10)
+  coinReward  Int             @default(5)
+
+  isActive    Boolean         @default(true)
+
+  // Scores
+  scores      GameScore[]
+
+  // Timestamps
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("games")
+}
+
+model GameScore {
+  id          String    @id @default(uuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  gameId      String
+  game        Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  score       Int
+  timeSpent   Int       // seconds
+  completed   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+
+  @@map("game_scores")
+}
+
+// ==================== QUIZZES ====================
+
+model Quiz {
+  id          String          @id @default(uuid())
+  topicId     String?
+  topic       Topic?          @relation(fields: [topicId], references: [id])
+
+  title       String
+  description String?
+  difficulty  DifficultyLevel @default(EASY)
+
+  // Settings
+  timeLimit   Int?            // minutes, null = no limit
+  showHints   Boolean         @default(true)
+  randomize   Boolean         @default(true)
+
+  // Points
+  xpReward    Int             @default(20)
+  coinReward  Int             @default(10)
+
+  isActive    Boolean         @default(true)
+
+  // Questions
+  questions   Question[]
+  attempts    QuizAttempt[]
+
+  // Timestamps
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("quizzes")
+}
+
+model Question {
+  id          String        @id @default(uuid())
+  quizId      String
+  quiz        Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  type        QuestionType
+  text        String
+  hint        String?
+  explanation String?
+
+  // Options for multiple choice
+  options     Json?
+
+  // Correct answer(s)
+  answer      Json
+
+  // Points
+  points      Int           @default(10)
+
+  order       Int
+
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("questions")
+}
+
+model QuizAttempt {
+  id          String    @id @default(uuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quizId      String
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  score       Int
+  maxScore    Int
+  answers     Json      // { questionId: answer }
+  timeSpent   Int       // seconds
+  completed   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+
+  @@map("quiz_attempts")
+}
+
+// ==================== PROGRESS ====================
+
+model Progress {
+  id          String    @id @default(uuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  topicId     String
+  topic       Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  // Progress percentage (0-100)
+  percentage  Int       @default(0)
+
+  // Time tracking
+  timeSpent   Int       @default(0) // seconds
+
+  // Completion
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([studentId, topicId])
+  @@map("progress")
+}
+
+// ==================== ACHIEVEMENTS ====================
+
+model Achievement {
+  id          String              @id @default(uuid())
+  name        String              @unique
+  description String
+  icon        String
+
+  // Criteria
+  criteria    Json                // { type: "xp", value: 100 }
+
+  // Rewards
+  xpReward    Int                 @default(0)
+  coinReward  Int                 @default(0)
+
+  isActive    Boolean             @default(true)
+
+  // Students who earned this
+  students    StudentAchievement[]
+
+  // Timestamps
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("achievements")
+}
+
+model StudentAchievement {
+  id            String      @id @default(uuid())
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  earnedAt      DateTime    @default(now())
+
+  @@unique([studentId, achievementId])
+  @@map("student_achievements")
+}
+
+// ==================== BEP ====================
+
+model BEP {
+  id          String      @id @default(uuid())
+  studentId   String      @unique
+  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Goals
+  goals       BEPGoal[]
+
+  // Timestamps
+  startDate   DateTime    @default(now())
+  endDate     DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("beps")
+}
+
+model BEPGoal {
+  id          String    @id @default(uuid())
+  bepId       String
+  bep         BEP       @relation(fields: [bepId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  targetDate  DateTime?
+
+  // Progress (0-100)
+  progress    Int       @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("bep_goals")
+}
+
+// ==================== NOTIFICATIONS ====================
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  title     String
+  content   String
+  data      Json?
+
+  read      Boolean          @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
