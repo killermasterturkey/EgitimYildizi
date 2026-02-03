@@ -52,6 +52,7 @@ const MainLayout = () => {
           { name: 'Oyunlar', href: '/games', icon: '🎮' },
           { name: 'Sınavlar', href: '/quizzes', icon: '📝' },
           { name: 'Başarılar', href: '/achievements', icon: '🏆' },
+          { name: 'Dükkan', href: '/shop', icon: '🏪' },
           { name: 'Profil', href: '/profile', icon: '👤' },
         ];
     }

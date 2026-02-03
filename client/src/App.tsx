@@ -24,6 +24,7 @@ import QuizzesPage from './pages/student/QuizzesPage';
 import QuizPage from './pages/student/QuizPage';
 import ProfilePage from './pages/student/ProfilePage';
 import AchievementsPage from './pages/student/AchievementsPage';
+import RewardShop from './pages/student/RewardShop';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -193,6 +194,7 @@ function App() {
           <Route path="/quizzes/:id" element={<QuizPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/shop" element={<RewardShop />} />
         </Route>
 
         {/* Admin Routes */}
