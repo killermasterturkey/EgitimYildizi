@@ -92,3 +92,51 @@ export const usersApi = {
   updateProfile: (id: string, data: any) => api.put(`/users/${id}`, data),
   getStudentProfile: (id: string) => api.get(`/users/${id}/student-profile`),
 };
+
+// Admin API
+export const adminApi = {
+  // Stats
+  getStats: () => api.get('/admin/stats'),
+
+  // Users
+  getUsers: (params?: { page?: number; limit?: number; role?: string; search?: string }) =>
+    api.get('/admin/users', { params }),
+  createUser: (data: any) => api.post('/admin/users', data),
+  updateUser: (id: string, data: any) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
+
+  // Lessons
+  getLessons: (params?: { page?: number; limit?: number; subject?: string; grade?: string }) =>
+    api.get('/admin/lessons', { params }),
+  createLesson: (data: any) => api.post('/admin/lessons', data),
+  updateLesson: (id: string, data: any) => api.put(`/admin/lessons/${id}`, data),
+  deleteLesson: (id: string) => api.delete(`/admin/lessons/${id}`),
+
+  // Games
+  getGames: (params?: { page?: number; limit?: number; type?: string }) =>
+    api.get('/admin/games', { params }),
+  createGame: (data: any) => api.post('/admin/games', data),
+  updateGame: (id: string, data: any) => api.put(`/admin/games/${id}`, data),
+  deleteGame: (id: string) => api.delete(`/admin/games/${id}`),
+};
+
+// Teacher API
+export const teacherApi = {
+  getDashboard: () => api.get('/teacher/dashboard'),
+  getStudents: () => api.get('/teacher/students'),
+  getStudent: (id: string) => api.get(`/teacher/students/${id}`),
+  getProgress: () => api.get('/teacher/progress'),
+  createAssignment: (data: any) => api.post('/teacher/assignments', data),
+  updateStudentNotes: (id: string, notes: string) =>
+    api.put(`/teacher/students/${id}/notes`, { notes }),
+};
+
+// Parent API
+export const parentApi = {
+  getChildren: () => api.get('/parent/children'),
+  getChild: (id: string) => api.get(`/parent/children/${id}`),
+  getChildReports: (id: string, period?: string) =>
+    api.get(`/parent/children/${id}/reports`, { params: { period } }),
+  getNotifications: () => api.get('/parent/notifications'),
+  updateSettings: (data: any) => api.post('/parent/settings', data),
+};

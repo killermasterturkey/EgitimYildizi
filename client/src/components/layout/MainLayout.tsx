@@ -3,6 +3,12 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
+interface NavItem {
+  name: string;
+  href: string;
+  icon: string;
+}
+
 const MainLayout = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -10,18 +16,66 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navigation = [
-    { name: 'Ana Sayfa', href: '/dashboard', icon: '🏠' },
-    { name: 'Dersler', href: '/lessons', icon: '📚' },
-    { name: 'Oyunlar', href: '/games', icon: '🎮' },
-    { name: 'Sınavlar', href: '/quizzes', icon: '📝' },
-    { name: 'Başarılar', href: '/achievements', icon: '🏆' },
-    { name: 'Profil', href: '/profile', icon: '👤' },
-  ];
+  // Role-based navigation
+  const getNavigation = (): NavItem[] => {
+    const role = user?.role || 'STUDENT';
+
+    switch (role) {
+      case 'ADMIN':
+        return [
+          { name: 'Panel', href: '/admin', icon: '📊' },
+          { name: 'Kullanıcılar', href: '/admin/users', icon: '👥' },
+          { name: 'Dersler', href: '/admin/lessons', icon: '📚' },
+          { name: 'Oyunlar', href: '/admin/games', icon: '🎮' },
+          { name: 'Öğretmen Paneli', href: '/teacher', icon: '👨‍🏫' },
+          { name: 'Veli Paneli', href: '/parent', icon: '👨‍👩‍👧' },
+        ];
+      case 'TEACHER':
+        return [
+          { name: 'Panel', href: '/teacher', icon: '📊' },
+          { name: 'Öğrencilerim', href: '/teacher/students', icon: '👨‍🎓' },
+          { name: 'Ödevler', href: '/teacher/assignments', icon: '📋' },
+        ];
+      case 'PARENT':
+        return [
+          { name: 'Panel', href: '/parent', icon: '📊' },
+          { name: 'Raporlar', href: '/parent/reports', icon: '📈' },
+        ];
+      default: // STUDENT
+        return [
+          { name: 'Ana Sayfa', href: '/dashboard', icon: '🏠' },
+          { name: 'Dersler', href: '/lessons', icon: '📚' },
+          { name: 'Oyunlar', href: '/games', icon: '🎮' },
+          { name: 'Sınavlar', href: '/quizzes', icon: '📝' },
+          { name: 'Başarılar', href: '/achievements', icon: '🏆' },
+          { name: 'Profil', href: '/profile', icon: '👤' },
+        ];
+    }
+  };
+
+  const navigation = getNavigation();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'ADMIN': return '👑 Yönetici';
+      case 'TEACHER': return '👨‍🏫 Öğretmen';
+      case 'PARENT': return '👨‍👩‍👧 Veli';
+      default: return '👨‍🎓 Öğrenci';
+    }
+  };
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'ADMIN': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'TEACHER': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'PARENT': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+      default: return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+    }
   };
 
   return (
@@ -54,32 +108,44 @@ const MainLayout = () => {
             <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-2xl">
               {user?.avatar || '😊'}
             </div>
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 dark:text-white truncate">
                 {user?.firstName} {user?.lastName}
               </p>
-              {user?.student && (
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span>Seviye {user.student.level}</span>
-                  <span>•</span>
-                  <span>⭐ {user.student.xp} XP</span>
-                </div>
-              )}
+              <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user?.role || 'STUDENT')}`}>
+                {getRoleLabel(user?.role || 'STUDENT')}
+              </span>
             </div>
           </div>
+
+          {/* Student specific info */}
           {user?.student && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-yellow-500">🪙</span>
-              <span className="font-medium">{user.student.coins} Altın</span>
+            <>
+              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <span>Seviye {user.student.level}</span>
+                <span>•</span>
+                <span>⭐ {user.student.xp} XP</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-yellow-500">🪙</span>
+                <span className="font-medium">{user.student.coins} Altın</span>
+              </div>
+            </>
+          )}
+
+          {/* Teacher specific info */}
+          {user?.teacher && (
+            <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+              <span>📚 {user.teacher.specialization || 'Genel'}</span>
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href ||
-              (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+              (item.href !== '/dashboard' && item.href !== '/admin' && item.href !== '/teacher' && item.href !== '/parent' && location.pathname.startsWith(item.href));
 
             return (
               <Link
@@ -100,7 +166,7 @@ const MainLayout = () => {
         </nav>
 
         {/* Theme toggle & Logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"

@@ -17,10 +17,28 @@ import LessonsPage from './pages/student/LessonsPage';
 import TopicPage from './pages/student/TopicPage';
 import GamesPage from './pages/student/GamesPage';
 import MemoryGamePage from './pages/student/games/MemoryGamePage';
+import DragDropGame from './pages/student/games/DragDropGame';
+import MatchingGame from './pages/student/games/MatchingGame';
+import CatchGame from './pages/student/games/CatchGame';
 import QuizzesPage from './pages/student/QuizzesPage';
 import QuizPage from './pages/student/QuizPage';
 import ProfilePage from './pages/student/ProfilePage';
 import AchievementsPage from './pages/student/AchievementsPage';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UsersManagement from './pages/admin/UsersManagement';
+import LessonsManagement from './pages/admin/LessonsManagement';
+import GamesManagement from './pages/admin/GamesManagement';
+
+// Teacher Pages
+import TeacherDashboard from './pages/teacher/TeacherDashboard';
+import StudentsPage from './pages/teacher/StudentsPage';
+import AssignmentsPage from './pages/teacher/AssignmentsPage';
+
+// Parent Pages
+import ParentDashboard from './pages/parent/ParentDashboard';
+import ReportsPage from './pages/parent/ReportsPage';
 
 // Loading component
 const LoadingScreen = () => (
@@ -47,6 +65,31 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Role-based Route wrapper
+interface RoleRouteProps {
+  children: React.ReactNode;
+  allowedRoles: string[];
+  redirectTo?: string;
+}
+
+const RoleRoute = ({ children, allowedRoles, redirectTo = '/dashboard' }: RoleRouteProps) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // Public Route wrapper (redirect if logged in)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -56,10 +99,39 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect based on role
+    const roleRedirects: Record<string, string> = {
+      ADMIN: '/admin',
+      TEACHER: '/teacher',
+      PARENT: '/parent',
+      STUDENT: '/dashboard',
+    };
+    return <Navigate to={roleRedirects[user.role] || '/dashboard'} replace />;
   }
 
   return <>{children}</>;
+};
+
+// Smart home redirect based on role
+const HomeRedirect = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const roleRedirects: Record<string, string> = {
+    ADMIN: '/admin',
+    TEACHER: '/teacher',
+    PARENT: '/parent',
+    STUDENT: '/dashboard',
+  };
+
+  return <Navigate to={roleRedirects[user.role] || '/dashboard'} replace />;
 };
 
 function App() {
@@ -97,7 +169,7 @@ function App() {
           />
         </Route>
 
-        {/* Protected Routes */}
+        {/* Student Protected Routes */}
         <Route
           element={
             <ProtectedRoute>
@@ -105,19 +177,62 @@ function App() {
             </ProtectedRoute>
           }
         >
+          {/* Student Routes */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/lessons" element={<LessonsPage />} />
           <Route path="/lessons/:lessonId/topics/:topicId" element={<TopicPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/memory/:id" element={<MemoryGamePage />} />
+          <Route path="/games/dragdrop" element={<DragDropGame />} />
+          <Route path="/games/matching" element={<MatchingGame />} />
+          <Route path="/games/catch" element={<CatchGame />} />
           <Route path="/quizzes" element={<QuizzesPage />} />
           <Route path="/quizzes/:id" element={<QuizPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
         </Route>
 
-        {/* Redirect root to dashboard or login */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Admin Routes */}
+        <Route
+          element={
+            <RoleRoute allowedRoles={['ADMIN']}>
+              <MainLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UsersManagement />} />
+          <Route path="/admin/lessons" element={<LessonsManagement />} />
+          <Route path="/admin/games" element={<GamesManagement />} />
+        </Route>
+
+        {/* Teacher Routes */}
+        <Route
+          element={
+            <RoleRoute allowedRoles={['TEACHER', 'ADMIN']}>
+              <MainLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="/teacher" element={<TeacherDashboard />} />
+          <Route path="/teacher/students" element={<StudentsPage />} />
+          <Route path="/teacher/assignments" element={<AssignmentsPage />} />
+        </Route>
+
+        {/* Parent Routes */}
+        <Route
+          element={
+            <RoleRoute allowedRoles={['PARENT', 'ADMIN']}>
+              <MainLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="/parent" element={<ParentDashboard />} />
+          <Route path="/parent/reports" element={<ReportsPage />} />
+        </Route>
+
+        {/* Smart Redirect based on role */}
+        <Route path="/" element={<HomeRedirect />} />
 
         {/* 404 */}
         <Route

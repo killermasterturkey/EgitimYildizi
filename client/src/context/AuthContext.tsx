@@ -15,6 +15,14 @@ interface User {
     level: number;
     coins: number;
   };
+  teacher?: {
+    id: string;
+    school?: string;
+    specialization?: string;
+  };
+  parent?: {
+    id: string;
+  };
 }
 
 interface AuthContextType {

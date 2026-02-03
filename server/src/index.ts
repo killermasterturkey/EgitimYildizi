@@ -16,6 +16,9 @@ import lessonRoutes from './routes/lesson.routes.js';
 import gameRoutes from './routes/game.routes.js';
 import quizRoutes from './routes/quiz.routes.js';
 import progressRoutes from './routes/progress.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import teacherRoutes from './routes/teacher.routes.js';
+import parentRoutes from './routes/parent.routes.js';
 
 // Import middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -52,6 +55,9 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/teacher', teacherRoutes);
+app.use('/api/parent', parentRoutes);
 
 // Error handler
 app.use(errorHandler);
