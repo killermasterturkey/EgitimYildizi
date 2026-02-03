@@ -19,6 +19,8 @@ import progressRoutes from './routes/progress.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import teacherRoutes from './routes/teacher.routes.js';
 import parentRoutes from './routes/parent.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import bepRoutes from './routes/bep.routes.js';
 
 // Import middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -58,6 +60,8 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/parent', parentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/bep', bepRoutes);
 
 // Error handler
 app.use(errorHandler);

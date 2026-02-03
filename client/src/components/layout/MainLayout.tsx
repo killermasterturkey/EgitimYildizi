@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 
 interface NavItem {
   name: string;
@@ -35,11 +36,14 @@ const MainLayout = () => {
           { name: 'Panel', href: '/teacher', icon: '📊' },
           { name: 'Öğrencilerim', href: '/teacher/students', icon: '👨‍🎓' },
           { name: 'Ödevler', href: '/teacher/assignments', icon: '📋' },
+          { name: 'BEP', href: '/teacher/bep', icon: '📝' },
+          { name: 'Analitik', href: '/teacher/analytics', icon: '📈' },
         ];
       case 'PARENT':
         return [
           { name: 'Panel', href: '/parent', icon: '📊' },
           { name: 'Raporlar', href: '/parent/reports', icon: '📈' },
+          { name: 'BEP', href: '/parent/bep', icon: '📝' },
         ];
       default: // STUDENT
         return [
@@ -198,12 +202,9 @@ const MainLayout = () => {
               </svg>
             </button>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {/* Notifications */}
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg relative">
-                <span className="text-xl">🔔</span>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              <NotificationDropdown />
 
               {/* Settings */}
               <Link

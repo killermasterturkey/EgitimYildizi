@@ -22,6 +22,13 @@ interface User {
   };
   parent?: {
     id: string;
+    children?: Array<{
+      id: string;
+      userId: string;
+      grade: string;
+      level: number;
+      xp: number;
+    }>;
   };
 }
 

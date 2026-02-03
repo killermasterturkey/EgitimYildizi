@@ -9,12 +9,38 @@ interface JwtPayload {
   role: UserRole;
 }
 
+// Extended Request with full user data for routes that need it
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: UserRole;
+    student?: {
+      id: string;
+    };
+    teacher?: {
+      id: string;
+    };
+    parent?: {
+      id: string;
+    };
+  };
+}
+
 declare global {
   namespace Express {
     interface Request {
       user?: {
         id: string;
         role: UserRole;
+        student?: {
+          id: string;
+        };
+        teacher?: {
+          id: string;
+        };
+        parent?: {
+          id: string;
+        };
       };
     }
   }
@@ -72,4 +98,100 @@ export const authorize = (...roles: UserRole[]) => {
 
     next();
   };
+};
+
+// Alias for backwards compatibility
+export const authMiddleware = authenticate;
+
+// Teacher-specific middleware - loads teacher data
+export const teacherMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next(new AppError('Not authenticated', 401));
+    }
+
+    if (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN') {
+      return next(new AppError('Teacher access required', 403));
+    }
+
+    // Load teacher data
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId: req.user.id },
+      select: { id: true }
+    });
+
+    if (teacher) {
+      req.user.teacher = { id: teacher.id };
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Parent-specific middleware - loads parent data
+export const parentMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next(new AppError('Not authenticated', 401));
+    }
+
+    if (req.user.role !== 'PARENT' && req.user.role !== 'ADMIN') {
+      return next(new AppError('Parent access required', 403));
+    }
+
+    // Load parent data
+    const parent = await prisma.parent.findFirst({
+      where: { userId: req.user.id },
+      select: { id: true }
+    });
+
+    if (parent) {
+      req.user.parent = { id: parent.id };
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Student-specific middleware - loads student data
+export const studentMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next(new AppError('Not authenticated', 401));
+    }
+
+    if (req.user.role !== 'STUDENT' && req.user.role !== 'ADMIN') {
+      return next(new AppError('Student access required', 403));
+    }
+
+    // Load student data
+    const student = await prisma.student.findFirst({
+      where: { userId: req.user.id },
+      select: { id: true }
+    });
+
+    if (student) {
+      req.user.student = { id: student.id };
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 };

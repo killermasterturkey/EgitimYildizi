@@ -110,6 +110,7 @@ model User {
   parent        Parent?
   teacher       Teacher?
   notifications Notification[]
+  createdBEPs   BEP[]
 
   @@map("users")
 }
@@ -143,8 +144,11 @@ model Student {
   quizAttempts    QuizAttempt[]
   gameScores      GameScore[]
 
-  // BEP
-  bep             BEP?
+  // BEP (multiple - one per academic year)
+  beps            BEP[]
+
+  // Additional teachers (BEP team)
+  teachers        TeacherStudent[]
 
   // Timestamps
   createdAt       DateTime         @default(now())
@@ -169,19 +173,23 @@ model Parent {
 }
 
 model Teacher {
-  id          String    @id @default(uuid())
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // School info
-  school      String?
+  school          String?
+  specialization  String?
 
-  // Students
-  students    Student[]
+  // Students (primary teacher)
+  students        Student[]
+
+  // Additional students (BEP team member)
+  teamStudents    TeacherStudent[]
 
   // Timestamps
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@map("teachers")
 }
@@ -431,42 +439,103 @@ model StudentAchievement {
 
 // ==================== BEP ====================
 
+enum BEPStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ACHIEVED
+  MODIFIED
+  DISCONTINUED
+}
+
+enum GoalCategory {
+  ACADEMIC
+  SOCIAL
+  COMMUNICATION
+  MOTOR
+  SELF_CARE
+  BEHAVIORAL
+}
+
 model BEP {
-  id          String      @id @default(uuid())
-  studentId   String      @unique
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id            String      @id @default(uuid())
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Creator
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [id])
+
+  // Basic info
+  title         String
+  academicYear  String      // e.g., "2024-2025"
+  status        BEPStatus   @default(DRAFT)
+
+  // Student assessment
+  diagnosis     String?     @db.Text
+  strengths     String?     @db.Text
+  weaknesses    String?     @db.Text
+  interests     String?     @db.Text
+
+  // Accommodations
+  accommodations Json?      // { teaching: [], testing: [], environment: [] }
 
   // Goals
-  goals       BEPGoal[]
+  goals         BEPGoal[]
 
   // Timestamps
-  startDate   DateTime    @default(now())
-  endDate     DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  startDate     DateTime
+  endDate       DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("beps")
 }
 
 model BEPGoal {
-  id          String    @id @default(uuid())
-  bepId       String
-  bep         BEP       @relation(fields: [bepId], references: [id], onDelete: Cascade)
+  id              String        @id @default(uuid())
+  bepId           String
+  bep             BEP           @relation(fields: [bepId], references: [id], onDelete: Cascade)
 
-  title       String
-  description String?
-  targetDate  DateTime?
+  category        GoalCategory
+  description     String        @db.Text
+  targetDate      DateTime?
+  successCriteria String?       @db.Text
 
-  // Progress (0-100)
-  progress    Int       @default(0)
-  completed   Boolean   @default(false)
-  completedAt DateTime?
+  // Status & Progress
+  status          GoalStatus    @default(NOT_STARTED)
+  progress        Int           @default(0)
+  achievedDate    DateTime?
+  notes           String?       @db.Text
 
   // Timestamps
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("bep_goals")
+}
+
+// Teacher-Student relationship for BEP
+model TeacherStudent {
+  id          String    @id @default(uuid())
+  teacherId   String
+  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Role in BEP team
+  isPrimary   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([teacherId, studentId])
+  @@map("teacher_students")
 }
 
 // ==================== NOTIFICATIONS ====================

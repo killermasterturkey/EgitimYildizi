@@ -35,10 +35,13 @@ import GamesManagement from './pages/admin/GamesManagement';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import StudentsPage from './pages/teacher/StudentsPage';
 import AssignmentsPage from './pages/teacher/AssignmentsPage';
+import BEPManagement from './pages/teacher/BEPManagement';
+import AnalyticsDashboard from './pages/teacher/AnalyticsDashboard';
 
 // Parent Pages
 import ParentDashboard from './pages/parent/ParentDashboard';
 import ReportsPage from './pages/parent/ReportsPage';
+import BEPView from './pages/parent/BEPView';
 
 // Loading component
 const LoadingScreen = () => (
@@ -217,6 +220,8 @@ function App() {
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/teacher/students" element={<StudentsPage />} />
           <Route path="/teacher/assignments" element={<AssignmentsPage />} />
+          <Route path="/teacher/bep" element={<BEPManagement />} />
+          <Route path="/teacher/analytics" element={<AnalyticsDashboard />} />
         </Route>
 
         {/* Parent Routes */}
@@ -229,6 +234,7 @@ function App() {
         >
           <Route path="/parent" element={<ParentDashboard />} />
           <Route path="/parent/reports" element={<ReportsPage />} />
+          <Route path="/parent/bep" element={<BEPView />} />
         </Route>
 
         {/* Smart Redirect based on role */}

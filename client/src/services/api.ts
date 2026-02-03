@@ -140,3 +140,6 @@ export const parentApi = {
   getNotifications: () => api.get('/parent/notifications'),
   updateSettings: (data: any) => api.post('/parent/settings', data),
 };
+
+// Default export for convenience
+export default api;

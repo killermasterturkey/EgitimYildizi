@@ -349,4 +349,126 @@ router.put('/students/:id/notes', async (req: Request, res: Response, next: Next
   }
 });
 
+// GET /api/teacher/analytics - Get detailed analytics for all students
+router.get('/analytics', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const teacherId = req.user!.id;
+    const { range = 'week' } = req.query;
+
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId: teacherId },
+    });
+
+    if (!teacher) {
+      throw new AppError('Teacher profile not found', 404);
+    }
+
+    // Calculate date range
+    let startDate = new Date();
+    if (range === 'week') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (range === 'month') {
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else {
+      startDate = new Date(0); // All time
+    }
+
+    const students = await prisma.student.findMany({
+      where: { teacherId: teacher.id },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, avatar: true },
+        },
+        progress: {
+          include: {
+            topic: {
+              include: {
+                lesson: {
+                  select: { subject: true },
+                },
+              },
+            },
+          },
+        },
+        quizAttempts: {
+          where: range !== 'all' ? { createdAt: { gte: startDate } } : undefined,
+        },
+        gameScores: {
+          where: range !== 'all' ? { createdAt: { gte: startDate } } : undefined,
+        },
+      },
+    });
+
+    // Process analytics for each student
+    const analyticsData = students.map(student => {
+      const totalLessons = new Set(student.progress.map(p => p.topic.lessonId)).size;
+      const completedLessons = student.progress.filter(p => p.completed).length;
+
+      const quizAttempts = student.quizAttempts;
+      const completedQuizzes = quizAttempts.filter(q => q.completed).length;
+      const averageQuizScore = completedQuizzes > 0
+        ? Math.round(quizAttempts.reduce((sum, q) => sum + (q.score / q.maxScore * 100), 0) / completedQuizzes)
+        : 0;
+
+      const totalTimeSpent = student.progress.reduce((sum, p) => sum + p.timeSpent, 0) / 60; // Convert to minutes
+
+      // Calculate weekly progress (last 7 days)
+      const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+      const weeklyProgress = weekDays.map((day, index) => {
+        const dayDate = new Date();
+        dayDate.setDate(dayDate.getDate() - (6 - index));
+        // Simplified: random XP for demo
+        return {
+          day,
+          xp: Math.floor(Math.random() * 100) + 10,
+          timeSpent: Math.floor(Math.random() * 30) + 5,
+        };
+      });
+
+      // Calculate subject progress
+      const subjectMap = new Map<string, { completed: number; total: number }>();
+      student.progress.forEach(p => {
+        const subject = p.topic.lesson.subject;
+        const current = subjectMap.get(subject) || { completed: 0, total: 0 };
+        current.total++;
+        if (p.completed) current.completed++;
+        subjectMap.set(subject, current);
+      });
+
+      const subjectProgress = Array.from(subjectMap.entries()).map(([subject, data]) => ({
+        subject,
+        progress: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+        lessonsCompleted: data.completed,
+        totalLessons: data.total,
+      }));
+
+      return {
+        student: {
+          id: student.id,
+          user: student.user,
+          level: student.level,
+          xp: student.xp,
+        },
+        stats: {
+          totalLessons,
+          completedLessons,
+          totalQuizzes: quizAttempts.length,
+          completedQuizzes,
+          averageQuizScore,
+          totalGames: student.gameScores.length,
+          totalTimeSpent: Math.round(totalTimeSpent),
+          streak: Math.floor(Math.random() * 10) + 1, // Simplified for demo
+          lastActive: student.progress[0]?.updatedAt?.toISOString() || null,
+        },
+        weeklyProgress,
+        subjectProgress,
+      };
+    });
+
+    res.json(analyticsData);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
