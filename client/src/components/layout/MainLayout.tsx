@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationDropdown from '../notifications/NotificationDropdown';
+import SearchBar from '../common/SearchBar';
 
 interface NavItem {
   name: string;
@@ -198,17 +199,22 @@ const MainLayout = () => {
       <div className="lg:ml-64">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b dark:border-gray-700">
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between px-4 py-3 gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
-            <div className="flex items-center gap-2">
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md hidden sm:block">
+              <SearchBar />
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
               {/* Notifications */}
               <NotificationDropdown />
 

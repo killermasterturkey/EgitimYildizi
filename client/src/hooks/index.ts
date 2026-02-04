@@ -4,3 +4,4 @@ export { useLocalStorage } from './useLocalStorage';
 export { useGameState, type GameState } from './useGameState';
 export { useStreak } from './useStreak';
 export { useOnboarding, type OnboardingStep } from './useOnboarding';
+export { usePushNotifications } from './usePushNotifications';
