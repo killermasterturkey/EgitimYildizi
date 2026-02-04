@@ -1,5 +1,6 @@
 import { PrismaClient, UserRole, GradeLevel, Subject, GameType, DifficultyLevel, QuestionType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { seedContent } from './seed-content';
 
 const prisma = new PrismaClient();
 
@@ -513,6 +514,12 @@ async function main() {
     ],
   });
 
+  // Run comprehensive content seed
+  console.log('');
+  console.log('📚 Running comprehensive curriculum seed...');
+  await seedContent();
+
+  console.log('');
   console.log('✅ Seeding completed!');
   console.log('');
   console.log('📧 Demo Hesaplar:');
