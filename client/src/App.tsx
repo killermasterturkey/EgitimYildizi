@@ -25,6 +25,10 @@ import QuizPage from './pages/student/QuizPage';
 import ProfilePage from './pages/student/ProfilePage';
 import AchievementsPage from './pages/student/AchievementsPage';
 import RewardShop from './pages/student/RewardShop';
+import SettingsPage from './pages/student/SettingsPage';
+import HelpPage from './pages/student/HelpPage';
+import DailyChallenges from './pages/student/DailyChallenges';
+import Leaderboard from './pages/student/Leaderboard';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -195,6 +199,10 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/shop" element={<RewardShop />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/challenges" element={<DailyChallenges />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Route>
 
         {/* Admin Routes */}

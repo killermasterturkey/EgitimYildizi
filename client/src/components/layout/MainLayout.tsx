@@ -51,9 +51,13 @@ const MainLayout = () => {
           { name: 'Dersler', href: '/lessons', icon: '📚' },
           { name: 'Oyunlar', href: '/games', icon: '🎮' },
           { name: 'Sınavlar', href: '/quizzes', icon: '📝' },
+          { name: 'Görevler', href: '/challenges', icon: '🎯' },
+          { name: 'Sıralama', href: '/leaderboard', icon: '🏅' },
           { name: 'Başarılar', href: '/achievements', icon: '🏆' },
           { name: 'Dükkan', href: '/shop', icon: '🏪' },
           { name: 'Profil', href: '/profile', icon: '👤' },
+          { name: 'Ayarlar', href: '/settings', icon: '⚙️' },
+          { name: 'Yardım', href: '/help', icon: '❓' },
         ];
     }
   };
@@ -209,7 +213,7 @@ const MainLayout = () => {
 
               {/* Settings */}
               <Link
-                to="/profile"
+                to="/settings"
                 className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
                 <span className="text-xl">⚙️</span>
