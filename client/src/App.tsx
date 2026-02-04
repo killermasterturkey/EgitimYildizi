@@ -29,6 +29,10 @@ import SettingsPage from './pages/student/SettingsPage';
 import HelpPage from './pages/student/HelpPage';
 import DailyChallenges from './pages/student/DailyChallenges';
 import Leaderboard from './pages/student/Leaderboard';
+import CertificatePage from './pages/student/CertificatePage';
+
+// Onboarding
+import OnboardingTour from './components/onboarding/OnboardingTour';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -203,6 +207,7 @@ function App() {
           <Route path="/help" element={<HelpPage />} />
           <Route path="/challenges" element={<DailyChallenges />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/certificates" element={<CertificatePage />} />
         </Route>
 
         {/* Admin Routes */}
@@ -268,6 +273,9 @@ function App() {
           }
         />
       </Routes>
+
+      {/* Onboarding Tour for new users */}
+      <OnboardingTour />
     </div>
   );
 }

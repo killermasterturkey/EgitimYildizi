@@ -54,6 +54,7 @@ const MainLayout = () => {
           { name: 'Görevler', href: '/challenges', icon: '🎯' },
           { name: 'Sıralama', href: '/leaderboard', icon: '🏅' },
           { name: 'Başarılar', href: '/achievements', icon: '🏆' },
+          { name: 'Sertifikalar', href: '/certificates', icon: '📜' },
           { name: 'Dükkan', href: '/shop', icon: '🏪' },
           { name: 'Profil', href: '/profile', icon: '👤' },
           { name: 'Ayarlar', href: '/settings', icon: '⚙️' },
