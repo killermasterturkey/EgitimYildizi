@@ -47,7 +47,7 @@ router.put('/:id/read', async (req: Request, res: Response, next: NextFunction) 
     const { id } = req.params;
     const userId = req.user!.id;
 
-    const notification = await prisma.notification.updateMany({
+    await prisma.notification.updateMany({
       where: { id, userId },
       data: { read: true, readAt: new Date() },
     });

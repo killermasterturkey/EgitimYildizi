@@ -202,7 +202,7 @@ router.get('/students/:id', async (req: Request, res: Response, next: NextFuncti
           },
           orderBy: { earnedAt: 'desc' },
         },
-        bep: true,
+        beps: true,
       },
     });
 

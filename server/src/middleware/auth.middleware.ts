@@ -48,7 +48,7 @@ declare global {
 
 export const authenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -87,7 +87,7 @@ export const authenticate = async (
 };
 
 export const authorize = (...roles: UserRole[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(new AppError('Not authenticated', 401));
     }
@@ -106,7 +106,7 @@ export const authMiddleware = authenticate;
 // Teacher-specific middleware - loads teacher data
 export const teacherMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -137,7 +137,7 @@ export const teacherMiddleware = async (
 // Parent-specific middleware - loads parent data
 export const parentMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -168,7 +168,7 @@ export const parentMiddleware = async (
 // Student-specific middleware - loads student data
 export const studentMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {

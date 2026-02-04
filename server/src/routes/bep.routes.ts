@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware, AuthRequest, teacherMiddleware, parentMiddleware } from '../middleware/auth.middleware';
+import { authMiddleware, AuthRequest, teacherMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -388,7 +388,7 @@ router.delete('/goals/:goalId', authMiddleware, teacherMiddleware, async (req: A
 });
 
 // Get BEP template
-router.get('/template/default', authMiddleware, teacherMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/template/default', authMiddleware, teacherMiddleware, async (_req: AuthRequest, res: Response) => {
   res.json(BEPTemplate);
 });
 

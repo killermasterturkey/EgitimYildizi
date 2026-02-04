@@ -214,9 +214,9 @@ export const me = async (
 };
 
 export const logout = async (
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   try {
     // In a real app, you might want to invalidate the token
@@ -226,6 +226,6 @@ export const logout = async (
       message: 'Logged out successfully',
     });
   } catch (error) {
-    next(error);
+    _next(error);
   }
 };
